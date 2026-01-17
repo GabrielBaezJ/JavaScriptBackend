@@ -5,6 +5,10 @@ const articleRoutes = require("./routes/articleRoutes");
 const app = express();
 app.use(cors());
 
+app.get("/", (req, res) => {
+    res.json({ message: "API is running. Use /api/articles to access articles." });
+});
+
 app.use("/api/articles", articleRoutes);
 
 const PORT = 3004;
