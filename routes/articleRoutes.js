@@ -2,7 +2,8 @@ const express = require("express");
 const router = express.Router();
 const controller = require("../controllers/articleController");
 
-router.get("/", controller.fetchArticles);
-router.get("/search", controller.searchArticles);
+// Dynamic search endpoint
+// Usage: GET /api/articles?search=technology
+router.get("/", controller.searchArticles);
 
 module.exports = router;

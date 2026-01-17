@@ -1,52 +1,39 @@
 const axios = require("axios");
 
-exports.getArticles = async (searchTerm = 'university') => {
-    const url = `https://api.plos.org/search?q=title:(${searchTerm})`;
-
-    const response = await axios.get(url);
-    return response.data.response.docs;
-};
-
-exports.searchArticles = async (params) => {
-    const {
-        query = 'science',
-        field = 'everything',
-        rows = 20,
-        start = 0,
-        sortBy = 'score',
-        order = 'desc'
-    } = params;
-
-    // Construir la consulta según el campo especificado
-    let searchQuery;
-    if (field === 'everything') {
-        searchQuery = query;
-    } else if (field === 'title') {
-        searchQuery = `title:(${query})`;
-    } else if (field === 'abstract') {
-        searchQuery = `abstract:(${query})`;
-    } else if (field === 'author') {
-        searchQuery = `author:(${query})`;
-    } else if (field === 'subject') {
-        searchQuery = `subject:(${query})`;
-    } else {
-        searchQuery = `${field}:(${query})`;
+// Configure axios with timeout
+const apiClient = axios.create({
+    timeout: 10000, // 10 seconds timeout
+    headers: {
+        'Content-Type': 'application/json'
     }
+});
 
-    // Construir ordenamiento
-    const sortParam = order === 'asc' ? sortBy : `${sortBy} desc`;
-
-    const url = `https://api.plos.org/search?q=${encodeURIComponent(searchQuery)}&rows=${rows}&start=${start}&sort=${encodeURIComponent(sortParam)}`;
+// Dynamic search function - searches all fields in PLOS API
+exports.searchArticles = async (searchTerm) => {
+    const url = `https://api.plos.org/search?q=${encodeURIComponent(searchTerm)}`;
 
     try {
-        const response = await axios.get(url);
+        const response = await apiClient.get(url);
+        
+        if (!response.data || !response.data.response) {
+            throw new Error('Invalid response from PLOS API');
+        }
+
         return {
-            articles: response.data.response.docs,
+            success: true,
             total: response.data.response.numFound,
-            start: start,
-            rows: rows
+            articles: response.data.response.docs
         };
     } catch (error) {
-        throw new Error('Error fetching articles from PLOS API');
+        if (error.code === 'ECONNABORTED') {
+            throw new Error('Request timeout - PLOS API took too long to respond');
+        }
+        if (error.response) {
+            throw new Error(`PLOS API error: ${error.response.status} - ${error.response.statusText}`);
+        }
+        if (error.request) {
+            throw new Error('No response received from PLOS API');
+        }
+        throw new Error(`Error searching articles: ${error.message}`);
     }
 };
