@@ -1,7 +1,7 @@
 const axios = require("axios");
 
 exports.getArticles = async (searchTerm = 'university') => {
-    const url = `https://api.plos.org/search?q=title:${searchTerm}`;
+    const url = `https://api.plos.org/search?q=title:(${searchTerm})`;
 
     const response = await axios.get(url);
     return response.data.response.docs;
@@ -22,15 +22,15 @@ exports.searchArticles = async (params) => {
     if (field === 'everything') {
         searchQuery = query;
     } else if (field === 'title') {
-        searchQuery = `title:${query}`;
+        searchQuery = `title:(${query})`;
     } else if (field === 'abstract') {
-        searchQuery = `abstract:${query}`;
+        searchQuery = `abstract:(${query})`;
     } else if (field === 'author') {
-        searchQuery = `author:${query}`;
+        searchQuery = `author:(${query})`;
     } else if (field === 'subject') {
-        searchQuery = `subject:${query}`;
+        searchQuery = `subject:(${query})`;
     } else {
-        searchQuery = `${field}:${query}`;
+        searchQuery = `${field}:(${query})`;
     }
 
     // Construir ordenamiento
