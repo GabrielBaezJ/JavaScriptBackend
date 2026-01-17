@@ -5,17 +5,11 @@ exports.searchArticles = async (req, res) => {
         // Get search term from query params
         const searchTerm = req.query.search;
 
-        // Validate input - avoid empty search
-        if (!searchTerm || searchTerm.trim() === '') {
-            return res.status(400).json({
-                success: false,
-                error: 'Search term is required',
-                message: 'Please provide a search query using ?search=your_term'
-            });
-        }
+        // If no search term provided, use a default term for initial load
+        const query = searchTerm && searchTerm.trim() !== '' ? searchTerm.trim() : 'science';
 
-        // Validate search term length
-        if (searchTerm.trim().length < 2) {
+        // Validate search term length only if provided by user
+        if (searchTerm && searchTerm.trim().length > 0 && searchTerm.trim().length < 2) {
             return res.status(400).json({
                 success: false,
                 error: 'Search term too short',
@@ -24,10 +18,10 @@ exports.searchArticles = async (req, res) => {
         }
 
         // Call model to search articles
-        const result = await articleModel.searchArticles(searchTerm.trim());
+        const result = await articleModel.searchArticles(query);
 
-        // Return filtered results
-        return res.status(200).json(result);
+        // Return only the articles array for frontend compatibility
+        return res.status(200).json(result.articles);
 
     } catch (error) {
         console.error('Search error:', error.message);
