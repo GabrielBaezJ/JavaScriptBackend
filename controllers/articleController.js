@@ -2,13 +2,10 @@ const articleModel = require("../models/articleModel");
 
 exports.searchArticles = async (req, res) => {
     try {
-        // Get search term from query params
         const searchTerm = req.query.search;
 
-        // If no search term provided, use a default term for initial load
         const query = searchTerm && searchTerm.trim() !== '' ? searchTerm.trim() : 'science';
 
-        // Validate search term length only if provided by user
         if (searchTerm && searchTerm.trim().length > 0 && searchTerm.trim().length < 2) {
             return res.status(400).json({
                 success: false,
@@ -17,16 +14,13 @@ exports.searchArticles = async (req, res) => {
             });
         }
 
-        // Call model to search articles
         const result = await articleModel.searchArticles(query);
 
-        // Return only the articles array for frontend compatibility
         return res.status(200).json(result.articles);
 
     } catch (error) {
         console.error('Search error:', error.message);
         
-        // Handle different types of errors
         if (error.message.includes('timeout')) {
             return res.status(504).json({
                 success: false,
@@ -43,7 +37,6 @@ exports.searchArticles = async (req, res) => {
             });
         }
 
-        // Generic error handler
         return res.status(500).json({
             success: false,
             error: 'Internal Server Error',
